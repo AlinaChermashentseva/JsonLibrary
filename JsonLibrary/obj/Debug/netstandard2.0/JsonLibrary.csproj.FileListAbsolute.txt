@@ -1,0 +1,9 @@
+C:\Users\cherm\source\repos\JsonLibrary\JsonLibrary\bin\Debug\netstandard2.0\JsonLibrary.deps.json
+C:\Users\cherm\source\repos\JsonLibrary\JsonLibrary\bin\Debug\netstandard2.0\JsonLibrary.dll
+C:\Users\cherm\source\repos\JsonLibrary\JsonLibrary\bin\Debug\netstandard2.0\JsonLibrary.pdb
+C:\Users\cherm\source\repos\JsonLibrary\JsonLibrary\obj\Debug\netstandard2.0\JsonLibrary.csprojAssemblyReference.cache
+C:\Users\cherm\source\repos\JsonLibrary\JsonLibrary\obj\Debug\netstandard2.0\JsonLibrary.csproj.CoreCompileInputs.cache
+C:\Users\cherm\source\repos\JsonLibrary\JsonLibrary\obj\Debug\netstandard2.0\JsonLibrary.AssemblyInfoInputs.cache
+C:\Users\cherm\source\repos\JsonLibrary\JsonLibrary\obj\Debug\netstandard2.0\JsonLibrary.AssemblyInfo.cs
+C:\Users\cherm\source\repos\JsonLibrary\JsonLibrary\obj\Debug\netstandard2.0\JsonLibrary.dll
+C:\Users\cherm\source\repos\JsonLibrary\JsonLibrary\obj\Debug\netstandard2.0\JsonLibrary.pdb
