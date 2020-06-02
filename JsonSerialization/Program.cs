@@ -20,6 +20,24 @@ namespace JsonSerialization // Чтобы можно было посмотрет
         [Json]
         public List<Person> Children { get; set; }
     }
+
+    [JsonObject]
+    public class Pet
+    {
+        public Pet(int id, string name, double weight)
+        {
+            Id = id;
+            Name = name;
+            Weight = weight;
+        }
+        [Json]
+        public int Id { get; set; }
+        [Json]
+        public string Name { get; set; }
+        [Json]
+        public double Weight { get; set; }
+    }
+
     class Program
     {
         static void Main()
@@ -32,6 +50,9 @@ namespace JsonSerialization // Чтобы можно было посмотрет
             person1.Children.Add(person3);
             person2.Children.Add(person4);
             JsonGenerator.GenerateJson(person1);
+            Console.WriteLine("-----------------------------------------");
+            Pet pet1 = new Pet(1, "Bill", 7.5);
+            JsonGenerator.GenerateJson(pet1);
             Console.ReadLine();
         }
     }

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 
 namespace JsonLibrary
 {
@@ -9,55 +10,53 @@ namespace JsonLibrary
     {
         public static void GenerateJson<T>(T person)
         {
-            var s = "{\n"; // Строка, в которой в итоге будет результат
+            StringBuilder sb = new StringBuilder();
+            sb.Append ("{\n");
             var type = person.GetType();
             int tabCount = 1; // Счетчик отступов (для красоты)
-            if (type.GetProperties().Length != 0) // Если нет свойств, тогда исключение
+            if (Attribute.IsDefined(type, typeof(JsonObject))) // Если есть [JsonObject], иначе исключение
             {
                 foreach (var item in type.GetProperties()) // Для каждого свойства выполняем GetPropertyValue
                 {
-                    s = GetPropertyValue(person, s, person, item, tabCount);
+                    if (Attribute.IsDefined(item, typeof(JsonAttribute))) // Если есть [Json]
+                        sb.Append(GetPropertyValue(person, person, item, tabCount));
                 }
             }
             else
-                throw new NotJsonObject("Этот объкт нельзя сериализовать");
-            s += "}";
-            Output(s);
+                throw new NotJsonObject("Not Json object");
+            sb.Append("}");
+            Output.FileOutput(sb);
         }
 
-        private static string GetPropertyValue<T>(T person, string s, T obj, PropertyInfo propertyInfo, int tabCount)
+        private static string GetPropertyValue<T>(T person, T obj, PropertyInfo propertyInfo, int tabCount)
         {
-            if (propertyInfo.PropertyType == typeof(int) || propertyInfo.PropertyType == typeof(string))
+            StringBuilder sb= new StringBuilder();            
+            if (propertyInfo.PropertyType != typeof(List<T>))
             {
-                s += $"{Tab(tabCount)}{propertyInfo.Name}: {propertyInfo.GetValue(obj)},\n";
+                sb.Append($"{Tab(tabCount)}{propertyInfo.Name}: {propertyInfo.GetValue(obj)},\n");
             }
-            else
+            if (propertyInfo.PropertyType == typeof(List<T>))
             {
+                sb.Append($"{Tab(tabCount)}{propertyInfo.Name}: [\n");
+                sb.Append($"{Tab(tabCount + 1)}" + "{ \n");
+                tabCount++;
                 if (propertyInfo.PropertyType == typeof(List<T>))
                 {
-                    s += $"{Tab(tabCount)}{propertyInfo.Name}: [\n";
-                    s += $"{Tab(tabCount + 1)}" + "{ \n";
-                    tabCount++;
-                    if (propertyInfo.PropertyType == typeof(List<T>))
+                    foreach (var p in (List<T>)propertyInfo.GetValue(obj)) // Для каждого элемента списка
                     {
-                        foreach (var p in (List<T>)propertyInfo.GetValue(obj)) // Для каждого элемента списка
+                        foreach (var prop in typeof(T).GetProperties()) // Для каждого свойства элемента списка
                         {
-                            foreach (var prop in typeof(T).GetProperties()) // Для каждого свойства элемента списка
+                            if (!(prop.GetValue(p) is List<T> l && l.Count == 0))
                             {
-                                if (!(prop.GetValue(p) is List<T> l && l.Count == 0))
-                                {
-                                    s = GetPropertyValue(person, s, p, prop, tabCount + 1);
-                                }
+                                sb.Append(GetPropertyValue(person, p, prop, tabCount + 1));
                             }
                         }
                     }
-                    s += $"{Tab(tabCount)}" + "} \n";
-                    s += $"{Tab(tabCount-1)}" + "]\n";
                 }
-                else
-                    throw new NotJsonObject("Этот объкт нельзя сериализовать"); // Могу дописать условия для double, bool... Это нужно?
+                sb.Append($"{Tab(tabCount)}" + "} \n");
+                sb.Append($"{Tab(tabCount-1)}" + "]\n"); 
             }
-            return s;
+            return sb.ToString();
         }
 
         private static string Tab(int tabCount) // Для отступов
@@ -67,18 +66,21 @@ namespace JsonLibrary
                 tab += "  ";
             return tab;
         }  
-        
-        private static void Output(string s)
+    }
+
+    public class Output // Класс для вывода
+    {
+        public static void FileOutput(StringBuilder sb)
         {
             string writePath = @"C:\Users\cherm\Desktop\Json.txt"; // Запись в файл
-            using (StreamWriter f = new StreamWriter(writePath, false, System.Text.Encoding.Default))
+            using (StreamWriter f = new StreamWriter(writePath, false, Encoding.Default))
             {
-                f.WriteLine(s);
+                f.WriteLine(sb);
             }
-            Console.WriteLine(s); // Вывод в консоль
-            //Console.ReadLine(); // Закомментировала, чтобы выполнялся юнит тест
+            Console.WriteLine(sb);
         }
     }
+
 
     public class NotJsonObject : Exception
     {
@@ -86,7 +88,7 @@ namespace JsonLibrary
         { }
     }
 
-    public class JsonAttribute : Attribute // Не знаю, нужно ли использовать как-то атрибуты, вроде как работает и без них
+    public class JsonAttribute : Attribute
     {
     }
 

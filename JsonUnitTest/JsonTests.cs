@@ -22,8 +22,23 @@ namespace JsonUnitTest
     }
 
     public class WrongPerson // Класс, чтобы проверить исключение NotJsonObject
-    {                        // исключение, потому что есть поле с типом double
+    {                        // Исключение, потому что нет [JsonObject]
         public WrongPerson(int id, string name, double weight)
+        {
+            Id = id;
+            Name = name;
+            Weight = weight;
+        }
+        [Json]
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public double Weight { get; set; }
+    }
+
+    [JsonObject]
+    public class Pet
+    {
+        public Pet(int id, string name, double weight)
         {
             Id = id;
             Name = name;
@@ -42,7 +57,7 @@ namespace JsonUnitTest
     {
 
         [TestMethod]
-        public void TestGenerateJson()
+        public void TestGenerateJsonForPerson()
         {
             Person person1 = new Person(1, "Jack");
             Person person2 = new Person(2, "Jill");
@@ -55,14 +70,15 @@ namespace JsonUnitTest
         }
 
         [TestMethod]
-        public void NotJsonObject_NoProperty()
+        public void TestGenerateJsonForPets()
         {
-            Assert.ThrowsException<NotJsonObject>(() => JsonGenerator.GenerateJson(3));
+            Pet pet1 = new Pet(1, "Bill", 7.5);
+            JsonGenerator.GenerateJson(pet1);
         }
 
         [TestMethod]
-        public void NotJsonObject_PropertyTypeIsDouble()
-        {
+        public void NotJsonObject()
+        { 
             Assert.ThrowsException<NotJsonObject>(() => JsonGenerator.GenerateJson(new WrongPerson(1, "Jack", 63.5)));
         }
     }
