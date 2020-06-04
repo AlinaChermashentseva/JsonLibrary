@@ -42,6 +42,7 @@ namespace JsonSerialization // Чтобы можно было посмотрет
     {
         static void Main()
         {
+            string writePath = @"C:\Users\cherm\Desktop\Json.txt";
             Person person1 = new Person(1, "Jack");
             Person person2 = new Person(2, "Jill");
             Person person3 = new Person(3, "Jull");
@@ -49,10 +50,12 @@ namespace JsonSerialization // Чтобы можно было посмотрет
             person1.Children.Add(person2);
             person1.Children.Add(person3);
             person2.Children.Add(person4);
-            JsonGenerator.GenerateJson(person1);
+            JsonGenerator<Person> p1 = new JsonGenerator<Person>(writePath);
+            p1.GenerateJson(person1);
             Console.WriteLine("-----------------------------------------");
+            JsonGenerator<Pet> p2 = new JsonGenerator<Pet>();
             Pet pet1 = new Pet(1, "Bill", 7.5);
-            JsonGenerator.GenerateJson(pet1);
+            p2.GenerateJson(pet1);
             Console.ReadLine();
         }
     }

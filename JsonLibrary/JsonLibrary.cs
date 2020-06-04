@@ -6,12 +6,27 @@ using System.Text;
 
 namespace JsonLibrary
 {
-    public static class JsonGenerator
+    public class JsonGenerator<T>
     {
-        public static void GenerateJson<T>(T person)
+        private readonly List<T> alreadySerialised;
+        public string WritePath { get; set; }
+
+        public JsonGenerator(string w)
+        {
+            WritePath = w;
+            alreadySerialised = new List<T>();
+        }
+
+        public JsonGenerator()
+        {
+            alreadySerialised = new List<T>();
+        }
+
+        public void GenerateJson(T person)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append ("{\n");
+            alreadySerialised.Add(person);
             var type = person.GetType();
             int tabCount = 1; // Счетчик отступов (для красоты)
             if (Attribute.IsDefined(type, typeof(JsonObject))) // Если есть [JsonObject], иначе исключение
@@ -25,10 +40,14 @@ namespace JsonLibrary
             else
                 throw new NotJsonObject("Not Json object");
             sb.Append("}");
-            Output.FileOutput(sb);
+            if (WritePath != null)
+            {
+                FileOutput.WriteInFile(sb, WritePath);               
+            }
+            ConsoleOutput.WriteInConsole(sb);
         }
 
-        private static string GetPropertyValue<T>(T person, T obj, PropertyInfo propertyInfo, int tabCount)
+        private string GetPropertyValue(T person, T obj, PropertyInfo propertyInfo, int tabCount)
         {
             StringBuilder sb= new StringBuilder();            
             if (propertyInfo.PropertyType != typeof(List<T>))
@@ -44,13 +63,19 @@ namespace JsonLibrary
                 {
                     foreach (var p in (List<T>)propertyInfo.GetValue(obj)) // Для каждого элемента списка
                     {
-                        foreach (var prop in typeof(T).GetProperties()) // Для каждого свойства элемента списка
+                        if (!(alreadySerialised.Contains(p)))
                         {
-                            if (!(prop.GetValue(p) is List<T> l && l.Count == 0))
+                            alreadySerialised.Add(p);
+                            foreach (var prop in typeof(T).GetProperties()) // Для каждого свойства элемента списка
                             {
-                                sb.Append(GetPropertyValue(person, p, prop, tabCount + 1));
+                                if (!(prop.GetValue(p) is List<T> l && l.Count == 0))
+                                {
+                                    sb.Append(GetPropertyValue(person, p, prop, tabCount + 1));
+                                }
                             }
                         }
+                        else
+                            throw new CycleError("Cycle");
                     }
                 }
                 sb.Append($"{Tab(tabCount)}" + "} \n");
@@ -59,7 +84,7 @@ namespace JsonLibrary
             return sb.ToString();
         }
 
-        private static string Tab(int tabCount) // Для отступов
+        private string Tab(int tabCount) // Для отступов
         {
             string tab = null;
             for (int i = 0; i < tabCount; i++)
@@ -68,23 +93,34 @@ namespace JsonLibrary
         }  
     }
 
-    public class Output // Класс для вывода
+    public class FileOutput // Класс для записи в файл
     {
-        public static void FileOutput(StringBuilder sb)
+        public static void WriteInFile(StringBuilder sb, string writePath)
         {
-            string writePath = @"C:\Users\cherm\Desktop\Json.txt"; // Запись в файл
             using (StreamWriter f = new StreamWriter(writePath, false, Encoding.Default))
             {
                 f.WriteLine(sb);
             }
+        }
+    }
+
+    public class ConsoleOutput // Класс для вывода
+    {
+        public static void WriteInConsole(StringBuilder sb)
+        {
             Console.WriteLine(sb);
         }
     }
 
-
     public class NotJsonObject : Exception
     {
         public NotJsonObject(string Message) : base(Message)
+        { }
+    }
+
+    public class CycleError : Exception
+    {
+        public CycleError(string Message) : base(Message)
         { }
     }
 
